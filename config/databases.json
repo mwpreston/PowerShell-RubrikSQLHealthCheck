@@ -1,0 +1,24 @@
+﻿{
+    "Databases": [
+        {
+            "SourceDBName": "MP_AdventureWorks",
+            "SourceDBInstance": "MSSQL",
+            "SourceDBServer": "MPRESTON-SQL",
+            "TargetDBName": "MP_AW_TEMP_LiveMount",
+            "TargetDBInstance": "MSSQLSERVER",
+            "TargetDBServer": "MPRESTON-WIN",
+            "TargetDBSQLCredentials": "MPRESTON-WIN-creds.xml",
+            "PathToStoreSnapshot": "C:\\snapshot\\"
+        },
+        {
+            "SourceDBName": "MP_AdventureWorks",
+            "SourceDBInstance": "MSSQL",
+            "SourceDBServer": "MPRESTON-SQL",
+            "TargetDBName": "AnotherLiveMount",
+            "TargetDBInstance": "MSSQL",
+            "TargetDBServer": "MPRESTON-SQL",
+            "TargetDBSQLCredentials": "MPRESTON-SQL-creds.xml",
+            "PathToStoreSnapshot": "C:\\snapshot\\"
+        }
+    ]
+}
