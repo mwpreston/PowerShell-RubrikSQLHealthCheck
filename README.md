@@ -22,7 +22,7 @@ The Environment folder contains a JSON file that describe the Rubrik Clusterinfo
 ### Config JSON File
 
 The Config folder contains JSON file (databases.json) that describe the source database information (Database to Live Mount) and the target database information (SQL Server/Database to Live Mount to). A sample configuration looks like:
-
+```javascript
 {
     "Databases": [
         {
@@ -47,7 +47,7 @@ The Config folder contains JSON file (databases.json) that describe the source d
         }
     ]
 }
-
+```
 ### Identity
 
 The Identity folder is not included in this repository. It can be placed anywhere in your environment and should host the secure XML files containing the credentials needed to communicate with the Rubrik cluster and source/target SQL Servers.
@@ -59,5 +59,6 @@ Note: Secure XML files can only be decrypted by the user account that created th
 ## Usage
 
 Once the Environment, Config, and Identity requirements are met, the script can be executed using the following syntax...
-
+```javascript
 .\ExecuteDBCC.ps1 -ConfigFile .\config\databases.json -EnvironmentFile .\environment\environment.json -IdentityPath .\identity
+```
