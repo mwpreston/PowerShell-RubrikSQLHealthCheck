@@ -35,6 +35,7 @@ function CheckForCredentials
 
 }
 
+#function to create xml credentials files if they do not exist
 function CreateCredentialFile ($FilePath, $Message)
 {
     $Credential = Get-Credential -Message $Message
