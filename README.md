@@ -2,15 +2,15 @@
 
 This project is designed to provide the framework to perform dbcc checkdb database health checks utilizing Rubrik's Live Mount Technology. By utilizing a Live Mounted database, organizations are able to offload all of the CPU and Disk I/O associated with DBCC CHECKDB.
 
-Prerequisites
+## Prerequisites
  - Rubrik Powershell Module
  - SQL Server Powershell Module
  
-Configuration
+## Configuration
 
 There are three main points of configuration: Environment JSON files, Config JSON files, and Identity XML files.
 
-Environment JSON File
+### Environment JSON File
 
 The Environment folder contains a JSON file that describe the Rubrik Clusterinformation. A sample configuration looks like:
 
@@ -19,7 +19,7 @@ The Environment folder contains a JSON file that describe the Rubrik Clusterinfo
     "rubrikCred": "rubrikCred.xml"
 }
 
-Config JSON File
+### Config JSON File
 
 The Config folder contains JSON file (databases.json) that describe the source database information (Database to Live Mount) and the target database information (SQL Server/Database to Live Mount to). A sample configuration looks like:
 
@@ -48,7 +48,7 @@ The Config folder contains JSON file (databases.json) that describe the source d
     ]
 }
 
-Identity
+### Identity
 
 The Identity folder is not included in this repository. It can be placed anywhere in your environment and should host the secure XML files containing the credentials needed to communicate with the Rubrik cluster and source/target SQL Servers.
 
@@ -56,7 +56,7 @@ Secure XML files may be created manually utilizing the Export-Clixml cmdlet, or 
 
 Note: Secure XML files can only be decrypted by the user account that created them.
 
-Usage
+## Usage
 
 Once the Environment, Config, and Identity requirements are met, the script can be executed using the following syntax...
 
