@@ -3,20 +3,20 @@
         {
             "SourceDBName": "MP_AdventureWorks",
             "SourceDBInstance": "MSSQL",
-            "SourceDBServer": "MPRESTON-SQL",
+            "SourceDBServer": "MPRESTON-SQL.rubrik.us",
             "TargetDBName": "MP_AW_TEMP_LiveMount",
             "TargetDBInstance": "MSSQLSERVER",
-            "TargetDBServer": "MPRESTON-WIN",
+            "TargetDBServer": "MPRESTON-WIN.rubrik.us",
             "TargetDBSQLCredentials": "MPRESTON-WIN-creds.xml",
             "PathToStoreSnapshot": "C:\\snapshot\\"
         },
         {
             "SourceDBName": "MP_AdventureWorks",
             "SourceDBInstance": "MSSQL",
-            "SourceDBServer": "MPRESTON-SQL",
+            "SourceDBServer": "MPRESTON-SQL.rubrik.us",
             "TargetDBName": "AnotherLiveMount",
             "TargetDBInstance": "MSSQL",
-            "TargetDBServer": "MPRESTON-SQL",
+            "TargetDBServer": "MPRESTON-SQL.rubrik.us",
             "TargetDBSQLCredentials": "MPRESTON-SQL-creds.xml",
             "PathToStoreSnapshot": "C:\\snapshot\\"
         }
