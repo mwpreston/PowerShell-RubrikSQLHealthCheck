@@ -80,34 +80,35 @@ foreach ($database in $Config.databases)
     while ((Get-RubrikRequest -id $id -type "mssql").status -eq "RUNNING") { Start-Sleep -Seconds 1 }
 
     # check if instance is MSSQLSERVER (default instance) - if so don't connect with instance name.
-    if ($database.TargetDBInstance -eq "MSSQLSERVER") {$sqlconnection = $database.TargetDBServer}
-    else { $sqlconnection = $database.TargetDBServer + "\" + $database.TargetDBInstance }
+    #if ($database.TargetDBInstance -eq "MSSQLSERVER") {$sqlconnection = $database.TargetDBServer}
+    #else { $sqlconnection = $database.TargetDBServer + "\" + $database.TargetDBInstance }
     
     #Get Credentials for SQL
     $CredFile = $IdentityPath + $database.TargetDBSQLCredentials
     $Creds = Import-Clixml -Path $CredFile
-
+    Write-Host $database.TargetDBConnectionString
     #Get Logical Filename for Primary File
     $results = Invoke-Sqlcmd -Query "SELECT name FROM sys.database_files WHERE type_desc = 'ROWS';" -ServerInstance `
-        $sqlconnection -Database $database.TargetDBName -Credential $Creds
+        $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
     $logicalfilename = $results.name
 
     #Take database snapshot
     $dbsnapshot = $database.TargetDBName + "_SS"
     $snapshotfilename = $database.PathToStoreSnapshot + $dbsnapshot + "1.ss"
     $results = Invoke-Sqlcmd -Query "CREATE DATABASE [$dbsnapshot] ON (name=$logicalfilename,filename='$snapshotfilename') AS SNAPSHOT OF $($database.TargetDBName)" -ServerInstance `
-        $sqlconnection -Database $database.TargetDBName -Credential $Creds
+        $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
 
     #Run dbcc checkdb
     $results = Invoke-Sqlcmd -Query "dbcc checkdb(); select @@spid as SessionID;" -ServerInstance `
-        $sqlconnection -Database $dbsnapshot -Credential $Creds
+        $database.TargetDBConnectionString -Database $dbsnapshot -Credential $Creds
     $spid = "spid" + $results.sessionID
-    $logresults = Get-SqlErrorLog -ServerInstance "$sqlconnection" -Credential $Creds | where-object { $_.Source -eq $spid } | ` 
+    $testing = $database.TargetDBConnectionString
+    $logresults = Get-SqlErrorLog -ServerInstance $testing -Credential $Creds | where-object { $_.Source -eq $spid } | ` 
         Sort-Object -Property Date -Descending | Select -First 1
 
     # Get rid of snapshot
     $results = Invoke-Sqlcmd -Query "DROP DATABASE [$dbsnapshot]" -ServerInstance `
-        $sqlconnection -Database "master" -Credential $Creds
+        $database.TargetDBConnectionString -Database "master" -Credential $Creds
 
     #Get rid of live mount
     $request = Get-RubrikDatabaseMount -MountedDatabaseName $database.TargetDBName | Remove-RubrikDatabaseMount -Confirm:$false
