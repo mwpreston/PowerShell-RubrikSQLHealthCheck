@@ -4,7 +4,7 @@ This project is designed to provide the framework to perform dbcc checkdb databa
 
 ## Prerequisites
  - [Rubrik Powershell Module](https://github.com/rubrikinc/PowerShell-Module)
- - SQL Server Powershell Module
+ - SQL Server Powershell Module (Install-Module -Name SqlServer)
  
 ## Configuration
 
