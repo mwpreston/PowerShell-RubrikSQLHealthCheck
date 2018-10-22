@@ -68,3 +68,7 @@ Once the Environment, Config, and Identity requirements are met, the script can 
 ```javascript
 .\ExecuteDBCC.ps1 -ConfigFile .\config\databases.json -EnvironmentFile .\environment\environment.json -IdentityPath .\identity
 ```
+Output from script may be logged to a file by piping the entire script to Out-File as follows:
+```javascript
+.\ExecuteDBCC.ps1 -ConfigFile .\config\databases.json -EnvironmentFile .\environment\environment.json -IdentityPath .\identity | Out-File C:\scriptoutput.txt
+```
