@@ -86,7 +86,6 @@ foreach ($database in $Config.databases)
     #Get Credentials for SQL
     $CredFile = $IdentityPath + $database.TargetDBSQLCredentials
     $Creds = Import-Clixml -Path $CredFile
-    Write-Host $database.TargetDBConnectionString
     #Get Logical Filename for Primary File
     $results = Invoke-Sqlcmd -Query "SELECT name FROM sys.database_files WHERE type_desc = 'ROWS';" -ServerInstance `
         $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
@@ -102,8 +101,7 @@ foreach ($database in $Config.databases)
     $results = Invoke-Sqlcmd -Query "dbcc checkdb(); select @@spid as SessionID;" -ServerInstance `
         $database.TargetDBConnectionString -Database $dbsnapshot -Credential $Creds
     $spid = "spid" + $results.sessionID
-    $testing = $database.TargetDBConnectionString
-    $logresults = Get-SqlErrorLog -ServerInstance $testing -Credential $Creds | where-object { $_.Source -eq $spid } | ` 
+    $logresults = Get-SqlErrorLog -ServerInstance $($database.TargetDBConnectionString) -Credential $Creds | where-object { $_.Source -eq $spid } | ` 
         Sort-Object -Property Date -Descending | Select -First 1
 
     # Get rid of snapshot
