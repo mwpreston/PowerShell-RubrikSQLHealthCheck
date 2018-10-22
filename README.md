@@ -21,7 +21,11 @@ The Environment folder contains a JSON file that describe the Rubrik Clusterinfo
 ```
 ### Config JSON File
 
-The Config folder contains JSON file (databases.json) that describe the source database information (Database to Live Mount) and the target database information (SQL Server/Database to Live Mount to). A sample configuration looks like:
+The Config folder contains JSON file (databases.json) that describe the source database information (Database to Live Mount) and the target database information (SQL Server/Database to Live Mount to). 
+
+Note: TargetDBServer is the name of the SQL Server within the Rubrik CDM while TargetDBConnectionString is the name of the SQL Server/Instance as you would connect to it via SQL Server Management Studio. While I could possibly programatically figure this out, there are times where the name within Rubrik differs from the actual connection string used.  
+
+A sample configuration looks like:
 ```javascript
 {
     "Databases": [
@@ -32,6 +36,7 @@ The Config folder contains JSON file (databases.json) that describe the source d
             "TargetDBName": "MP_AW_TEMP_LiveMount",
             "TargetDBInstance": "MSSQLSERVER",
             "TargetDBServer": "MPRESTON-WIN",
+            "TargetDBConnectionString": "MPRESTON-WIN.rubrik.us\\MSSQL",
             "TargetDBSQLCredentials": "MPRESTON-WIN-creds.xml",
             "PathToStoreSnapshot": "C:\\snapshot\\"
         },
@@ -42,6 +47,7 @@ The Config folder contains JSON file (databases.json) that describe the source d
             "TargetDBName": "AnotherLiveMount",
             "TargetDBInstance": "MSSQL",
             "TargetDBServer": "MPRESTON-SQL",
+            "TargetDBConnectionString": "MPRESTON-SQL.rubrik.us",
             "TargetDBSQLCredentials": "MPRESTON-SQL-creds.xml",
             "PathToStoreSnapshot": "C:\\snapshot\\"
         }
