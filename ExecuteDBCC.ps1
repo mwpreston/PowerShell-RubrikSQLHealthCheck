@@ -59,10 +59,12 @@ CheckForCredentials
 
 $Credential = Import-Clixml -Path ($IdentityPath + $Environment.rubrikCred)
 $null = Connect-Rubrik -Server $Environment.rubrikServer -Credential $Credential
-Write-Verbose -Message "Rubrik Status: Connected to $($rubrikConnection.server)" -Verbose
+Write-Output "Rubrik Status: Connected to $($rubrikConnection.server)"
 
 foreach ($database in $Config.databases)
 {
+    Write-Output "Beginning Live Mount of $($database.SourceDBName) on $($database.TargetDBConnectionString)"
+
     #Get Source DB Info
     $db = Get-RubrikDatabase -HostName $database.SourceDBServer -Instance $database.SourceDBInstance -Database $database.SourceDBName
     
@@ -79,39 +81,43 @@ foreach ($database in $Config.databases)
     $id = $request.id
     while ((Get-RubrikRequest -id $id -type "mssql").status -eq "RUNNING") { Start-Sleep -Seconds 1 }
 
-    # check if instance is MSSQLSERVER (default instance) - if so don't connect with instance name.
-    #if ($database.TargetDBInstance -eq "MSSQLSERVER") {$sqlconnection = $database.TargetDBServer}
-    #else { $sqlconnection = $database.TargetDBServer + "\" + $database.TargetDBInstance }
-    
+    Write-Output "Live Mount of $($database.SourceDBName) completed! Live Mount name is $($database.TargetDBName)"
+
+    Write-Output "Creating SQL database snapshot of $($database.TargetDBName)"
     #Get Credentials for SQL
     $CredFile = $IdentityPath + $database.TargetDBSQLCredentials
     $Creds = Import-Clixml -Path $CredFile
     #Get Logical Filename for Primary File
     $results = Invoke-Sqlcmd -Query "SELECT name FROM sys.database_files WHERE type_desc = 'ROWS';" -ServerInstance `
-        $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
+    $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
     $logicalfilename = $results.name
 
     #Take database snapshot
     $dbsnapshot = $database.TargetDBName + "_SS"
     $snapshotfilename = $database.PathToStoreSnapshot + $dbsnapshot + "1.ss"
     $results = Invoke-Sqlcmd -Query "CREATE DATABASE [$dbsnapshot] ON (name=$logicalfilename,filename='$snapshotfilename') AS SNAPSHOT OF $($database.TargetDBName)" -ServerInstance `
-        $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
+    $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
 
+    Write-Output "Running dbcc checkdb on $($database.TargetDBName) SQL Snapshot.."
     #Run dbcc checkdb
     $results = Invoke-Sqlcmd -Query "dbcc checkdb(); select @@spid as SessionID;" -ServerInstance `
-        $database.TargetDBConnectionString -Database $dbsnapshot -Credential $Creds
+    $database.TargetDBConnectionString -Database $dbsnapshot -Credential $Creds
     $spid = "spid" + $results.sessionID
     $logresults = Get-SqlErrorLog -ServerInstance $($database.TargetDBConnectionString) -Credential $Creds | where-object { $_.Source -eq $spid } | ` 
-        Sort-Object -Property Date -Descending | Select -First 1
+    Sort-Object -Property Date -Descending | Select -First 1
 
     # Get rid of snapshot
     $results = Invoke-Sqlcmd -Query "DROP DATABASE [$dbsnapshot]" -ServerInstance `
-        $database.TargetDBConnectionString -Database "master" -Credential $Creds
+    $database.TargetDBConnectionString -Database "master" -Credential $Creds
 
+    Write-Output "DBCC Complete, removing $($database.TargetDBName)"
     #Get rid of live mount
     $request = Get-RubrikDatabaseMount -MountedDatabaseName $database.TargetDBName | Remove-RubrikDatabaseMount -Confirm:$false
 
-    Write-Host $logresults.Text
-
+    Write-Output "Results of dbcc checkdb for $($database.SourceDBName) Live Mount"
+    Write-Output "================================================================"
+    Write-Output $logresults.Text
+    Write-Output "================================================================"
 }
 
+Write-Output "Script Complete!"
