@@ -3,7 +3,7 @@
 This project is designed to provide the framework to perform dbcc checkdb database health checks utilizing Rubrik's Live Mount Technology. By utilizing a Live Mounted database, organizations are able to offload all of the CPU and Disk I/O associated with DBCC CHECKDB.
 
 ## Prerequisites
- - Rubrik Powershell Module
+ - [Rubrik Powershell Module](https://github.com/rubrikinc/PowerShell-Module)
  - SQL Server Powershell Module
  
 ## Configuration
