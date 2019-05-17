@@ -12,7 +12,7 @@ There are three main points of configuration: Environment JSON files, Config JSO
 
 ### Environment JSON File
 
-The Environment folder contains a JSON file that describe the Rubrik Clusterinformation. A sample configuration looks like:
+The Environment folder contains a JSON file that describe the Rubrik Cluster information. A sample configuration looks like:
 ```javascript
 {
     "rubrikServer": "172.17.28.11",
