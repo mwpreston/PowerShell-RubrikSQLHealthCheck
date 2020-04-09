@@ -5,9 +5,9 @@
             "SourceDBInstance": "MSSQL",
             "SourceDBServer": "MPRESTON-SQL",
             "TargetDBName": "MP_AW_TEMP_LiveMount",
-            "TargetDBInstance": "MSSQLSERVER",
+            "TargetDBInstance": "MSSQL",
             "TargetDBServer": "MPRESTON-WIN",
-            "TargetDBConnectionString": "MPRESTON-WIN.rubrik.us",
+            "TargetDBConnectionString": "MPRESTON-WIN.rubrik.us\\MSSQL",
             "TargetDBSQLCredentials": "MPRESTON-WIN-creds.xml",
             "PathToStoreSnapshot": "C:\\snapshot\\"
         }

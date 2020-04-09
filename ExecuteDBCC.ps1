@@ -67,16 +67,10 @@ foreach ($database in $Config.databases)
 
     #Get Source DB Info
     $db = Get-RubrikDatabase -HostName $database.SourceDBServer -Instance $database.SourceDBInstance -Database $database.SourceDBName
-    
-    #get HostID of Target
-    $TargetSQLHostId = (Get-RubrikHost -Name $database.TargetDBServer).id
-    
     #get instance id of target
-    $TargetSQLInstanceId = ((Invoke-RubrikRESTCall -Endpoint "mssql/instance" -Method GET -Query  (New-Object -TypeName PSObject  -Property @{"root_id"="$TargetSQLHostId"})).Data | where { $_.name -eq "$($database.TargetDBInstance)"}).id
-    
+    $TargetSQLInstanceId = (Get-RubrikSQLInstance -Hostname $database.TargetDBServer -InstanceName $database.TargetDBInstance).id
     #Live Mount latest full backup
-    $request = New-RubrikDatabaseMount -id $db.id -targetInstanceId $TargetSQLInstanceId -mountedDatabaseName `
-                $database.TargetDBName -recoveryDateTime (Get-date (Get-RubrikDatabase -id $db.id).latestRecoveryPoint) -Confirm:$false
+    $request = New-RubrikDatabaseMount -id $db.id -TargetInstanceId $TargetSQLInstanceId -mountedDatabaseName $database.TargetDBName -recoveryDateTime (Get-date (Get-RubrikDatabase -id $db.id).latestRecoveryPoint) -Confirm:$false
     #wait for task
     $id = $request.id
     while ((Get-RubrikRequest -id $id -type "mssql").status -eq "RUNNING") { Start-Sleep -Seconds 1 }
@@ -88,27 +82,24 @@ foreach ($database in $Config.databases)
     $CredFile = $IdentityPath + $database.TargetDBSQLCredentials
     $Creds = Import-Clixml -Path $CredFile
     #Get Logical Filename for Primary File
-    $results = Invoke-Sqlcmd -Query "SELECT name FROM sys.database_files WHERE type_desc = 'ROWS';" -ServerInstance `
-    $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
+    #-=MWP=- - may need to rejig for sa usage
+    #-=MWP=- - need to look at connectionstring if instance is just MSSQL
+    $results = Invoke-Sqlcmd -Query "SELECT name FROM sys.database_files WHERE type_desc = 'ROWS';" -ServerInstance $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
     $logicalfilename = $results.name
 
     #Take database snapshot
     $dbsnapshot = $database.TargetDBName + "_SS"
     $snapshotfilename = $database.PathToStoreSnapshot + $dbsnapshot + "1.ss"
-    $results = Invoke-Sqlcmd -Query "CREATE DATABASE [$dbsnapshot] ON (name=$logicalfilename,filename='$snapshotfilename') AS SNAPSHOT OF $($database.TargetDBName)" -ServerInstance `
-    $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
+    $results = Invoke-Sqlcmd -Query "CREATE DATABASE [$dbsnapshot] ON (name=$logicalfilename,filename='$snapshotfilename') AS SNAPSHOT OF $($database.TargetDBName)" -ServerInstance $database.TargetDBConnectionString -Database $database.TargetDBName -Credential $Creds
 
     Write-Output "Running dbcc checkdb on $($database.TargetDBName) SQL Snapshot.."
     #Run dbcc checkdb
-    $results = Invoke-Sqlcmd -Query "dbcc checkdb(); select @@spid as SessionID;" -ServerInstance `
-    $database.TargetDBConnectionString -Database $dbsnapshot -Credential $Creds
+    $results = Invoke-Sqlcmd -Query "dbcc checkdb(); select @@spid as SessionID;" -ServerInstance $database.TargetDBConnectionString -Database $dbsnapshot -Credential $Creds
     $spid = "spid" + $results.sessionID
-    $logresults = Get-SqlErrorLog -ServerInstance $($database.TargetDBConnectionString) -Credential $Creds | where-object { $_.Source -eq $spid } | ` 
-    Sort-Object -Property Date -Descending | Select -First 1
+    $logresults = Get-SqlErrorLog -ServerInstance $($database.TargetDBConnectionString) -Credential $Creds | where-object { $_.Source -eq $spid } | Sort-Object -Property Date -Descending | Select -First 1
 
     # Get rid of snapshot
-    $results = Invoke-Sqlcmd -Query "DROP DATABASE [$dbsnapshot]" -ServerInstance `
-    $database.TargetDBConnectionString -Database "master" -Credential $Creds
+    $results = Invoke-Sqlcmd -Query "DROP DATABASE [$dbsnapshot]" -ServerInstance $database.TargetDBConnectionString -Database "master" -Credential $Creds
 
     Write-Output "DBCC Complete, removing $($database.TargetDBName)"
     #Get rid of live mount
